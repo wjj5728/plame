@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { formatPercent } from '@/lib/utils';
+import { formatPercent, getPriceDecimals } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { ScrollingNumber } from './ScrollingNumber';
 
@@ -82,7 +82,7 @@ export function AnimatedPriceDisplay({
       <div className="flex items-center gap-4">
         <ScrollingNumber
           value={displayPrice}
-          decimals={2}
+          decimals={displayPrice !== null ? getPriceDecimals(displayPrice) : 2}
           size={size}
         />
         {change24h !== null && (

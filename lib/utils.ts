@@ -6,10 +6,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+// 根据价格值计算应该使用的小数位数
+// 如果价格小于1（0.开头），使用4位小数；否则使用2位小数
+export function getPriceDecimals(price: number): number {
+  return price < 1 ? 4 : 2;
+}
+
 // 格式化价格显示
-export function formatPrice(price: number | null, decimals: number = 2): string {
+export function formatPrice(price: number | null, decimals?: number): string {
   if (price === null) return '--';
-  return price.toFixed(decimals);
+  // 如果没有指定小数位数，根据价格值自动判断
+  const finalDecimals = decimals !== undefined ? decimals : getPriceDecimals(price);
+  return price.toFixed(finalDecimals);
 }
 
 // 格式化百分比

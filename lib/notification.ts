@@ -1,4 +1,5 @@
 // 浏览器通知管理
+import { formatPrice } from './utils';
 
 // 请求通知权限
 export async function requestNotificationPermission(): Promise<boolean> {
@@ -49,7 +50,7 @@ export function sendPriceAlertNotification(
   const typeText = type === 'futures' ? '合约' : '现货';
   const conditionText = condition === 'above' ? '高于' : '低于';
   const title = `${symbol} 价格告警`;
-  const body = `${typeText}价格已${conditionText}目标价格 ${targetPrice.toFixed(2)}，当前价格: ${currentPrice.toFixed(2)}`;
+  const body = `${typeText}价格已${conditionText}目标价格 ${formatPrice(targetPrice)}，当前价格: ${formatPrice(currentPrice)}`;
 
   try {
     const notification = new Notification(title, {

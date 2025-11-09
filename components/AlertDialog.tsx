@@ -14,6 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PriceAlert, AlertType, AlertCondition } from '@/lib/types';
+import { formatPrice } from '@/lib/utils';
 import { Bell, Trash2 } from 'lucide-react';
 import {
   Select,
@@ -69,11 +70,11 @@ export function AlertDialog({
 
     // 验证价格合理性
     if (condition === 'above' && price <= currentPrice) {
-      setError(`目标价格应高于当前价格 ${currentPrice.toFixed(2)}`);
+      setError(`目标价格应高于当前价格 ${formatPrice(currentPrice)}`);
       return;
     }
     if (condition === 'below' && price >= currentPrice) {
-      setError(`目标价格应低于当前价格 ${currentPrice.toFixed(2)}`);
+      setError(`目标价格应低于当前价格 ${formatPrice(currentPrice)}`);
       return;
     }
 
@@ -132,7 +133,7 @@ export function AlertDialog({
                     </span>
                     <span className="text-sm text-muted-foreground">
                       {alert.condition === 'above' ? '高于' : '低于'}{' '}
-                      {alert.targetPrice.toFixed(2)}
+                      {formatPrice(alert.targetPrice)}
                     </span>
                     <span
                       className={`text-xs px-2 py-0.5 rounded ${
@@ -181,10 +182,10 @@ export function AlertDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="futures" disabled={futuresPrice === null}>
-                  合约价格 {futuresPrice !== null && `(${futuresPrice.toFixed(2)})`}
+                  合约价格 {futuresPrice !== null && `(${formatPrice(futuresPrice)})`}
                 </SelectItem>
                 <SelectItem value="spot" disabled={spotPrice === null}>
-                  现货价格 {spotPrice !== null && `(${spotPrice.toFixed(2)})`}
+                  现货价格 {spotPrice !== null && `(${formatPrice(spotPrice)})`}
                 </SelectItem>
               </SelectContent>
             </Select>
@@ -222,7 +223,7 @@ export function AlertDialog({
             />
             {currentPrice !== null && (
               <p className="text-xs text-muted-foreground">
-                当前价格: {currentPrice.toFixed(2)}
+                当前价格: {formatPrice(currentPrice)}
               </p>
             )}
             {error && <p className="text-sm text-destructive">{error}</p>}
