@@ -50,17 +50,27 @@ export function loadTradingPairs(): TradingPair[] {
   }
 }
 
-// 验证交易对格式（币安格式：BTCUSDT, ETHUSDT 等）
+// 验证交易对格式（币安格式：BTCUSDT, ETHUSDT 等，支持中文）
 export function validateSymbol(symbol: string): boolean {
   if (!symbol) return false;
-  // 币安交易对格式：至少4个字符，全大写字母和数字
-  const symbolRegex = /^[A-Z0-9]{4,}$/;
-  return symbolRegex.test(symbol.toUpperCase());
+  // 支持大小写字母、数字和中文字符，至少2个字符
+  const symbolRegex = /^[A-Za-z0-9\u4e00-\u9fff]{2,}$/;
+  return symbolRegex.test(symbol);
 }
 
-// 标准化交易对符号（转为大写）
+// 标准化交易对符号（转为大写，保留中文）
 export function normalizeSymbol(symbol: string): string {
-  return symbol.toUpperCase().trim();
+  return symbol
+    .trim()
+    .split('')
+    .map(char => {
+      // 如果是英文字母，转为大写；中文字符保持不变
+      if (/[a-zA-Z]/.test(char)) {
+        return char.toUpperCase();
+      }
+      return char;
+    })
+    .join('');
 }
 
 // localStorage 操作：保存告警配置
