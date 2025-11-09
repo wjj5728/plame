@@ -1,0 +1,101 @@
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+import { TradingPair, PriceAlert, AlertConfigMap } from "./types"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
+// 格式化价格显示
+export function formatPrice(price: number | null, decimals: number = 2): string {
+  if (price === null) return '--';
+  return price.toFixed(decimals);
+}
+
+// 格式化百分比
+export function formatPercent(value: number | null, decimals: number = 2): string {
+  if (value === null) return '--';
+  const sign = value >= 0 ? '+' : '';
+  return `${sign}${value.toFixed(decimals)}%`;
+}
+
+// 计算价差百分比
+export function calculatePriceDiff(futuresPrice: number | null, spotPrice: number | null): number | null {
+  if (futuresPrice === null || spotPrice === null || spotPrice === 0) {
+    return null;
+  }
+  return ((futuresPrice - spotPrice) / spotPrice) * 100;
+}
+
+// localStorage 操作：保存交易对列表
+export function saveTradingPairs(pairs: TradingPair[]): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('tradingPairs', JSON.stringify(pairs));
+  } catch (error) {
+    console.error('Failed to save trading pairs:', error);
+  }
+}
+
+// localStorage 操作：读取交易对列表
+export function loadTradingPairs(): TradingPair[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const data = localStorage.getItem('tradingPairs');
+    if (!data) return [];
+    return JSON.parse(data) as TradingPair[];
+  } catch (error) {
+    console.error('Failed to load trading pairs:', error);
+    return [];
+  }
+}
+
+// 验证交易对格式（币安格式：BTCUSDT, ETHUSDT 等）
+export function validateSymbol(symbol: string): boolean {
+  if (!symbol) return false;
+  // 币安交易对格式：至少4个字符，全大写字母和数字
+  const symbolRegex = /^[A-Z0-9]{4,}$/;
+  return symbolRegex.test(symbol.toUpperCase());
+}
+
+// 标准化交易对符号（转为大写）
+export function normalizeSymbol(symbol: string): string {
+  return symbol.toUpperCase().trim();
+}
+
+// localStorage 操作：保存告警配置
+export function saveAlerts(alerts: AlertConfigMap): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('priceAlerts', JSON.stringify(alerts));
+  } catch (error) {
+    console.error('Failed to save alerts:', error);
+  }
+}
+
+// localStorage 操作：读取告警配置
+export function loadAlerts(): AlertConfigMap {
+  if (typeof window === 'undefined') return {};
+  try {
+    const data = localStorage.getItem('priceAlerts');
+    if (!data) return {};
+    return JSON.parse(data) as AlertConfigMap;
+  } catch (error) {
+    console.error('Failed to load alerts:', error);
+    return {};
+  }
+}
+
+// 检查价格是否触发告警
+export function checkAlertTrigger(
+  alert: PriceAlert,
+  currentPrice: number | null
+): boolean {
+  if (!alert.enabled || currentPrice === null) return false;
+  
+  if (alert.condition === 'above') {
+    return currentPrice >= alert.targetPrice;
+  } else {
+    return currentPrice <= alert.targetPrice;
+  }
+}
