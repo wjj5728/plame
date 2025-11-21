@@ -7,7 +7,7 @@ import { AddPairDialog } from '@/components/AddPairDialog';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useBinancePrice } from '@/hooks/useBinancePrice';
 import { TradingPair, PriceAlert, AlertConfigMap } from '@/lib/types';
-import { saveTradingPairs, loadTradingPairs, saveAlerts, loadAlerts } from '@/lib/utils';
+import { saveTradingPairs, loadTradingPairs, saveAlerts, loadAlerts, saveTitleSymbol, loadTitleSymbol } from '@/lib/utils';
 import { requestNotificationPermission } from '@/lib/notification';
 import { Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,14 @@ export default function Home() {
   useEffect(() => {
     const savedAlerts = loadAlerts();
     setAlerts(savedAlerts);
+  }, []);
+
+  // 从 localStorage 加载标题显示配置
+  useEffect(() => {
+    const savedTitleSymbol = loadTitleSymbol();
+    if (savedTitleSymbol) {
+      setTitleSymbol(savedTitleSymbol);
+    }
   }, []);
 
   // 请求通知权限
@@ -105,7 +113,11 @@ export default function Home() {
 
   // 切换标题显示
   const handleToggleTitle = (symbol: string) => {
-    setTitleSymbol((prev) => (prev === symbol ? null : symbol));
+    setTitleSymbol((prev) => {
+      const newSymbol = prev === symbol ? null : symbol;
+      saveTitleSymbol(newSymbol);
+      return newSymbol;
+    });
   };
 
   return (

@@ -104,6 +104,31 @@ export function loadAlerts(): AlertConfigMap {
   }
 }
 
+// localStorage 操作：保存标题显示的交易对
+export function saveTitleSymbol(symbol: string | null): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (symbol === null) {
+      localStorage.removeItem('titleSymbol');
+    } else {
+      localStorage.setItem('titleSymbol', symbol);
+    }
+  } catch (error) {
+    console.error('Failed to save title symbol:', error);
+  }
+}
+
+// localStorage 操作：读取标题显示的交易对
+export function loadTitleSymbol(): string | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    return localStorage.getItem('titleSymbol');
+  } catch (error) {
+    console.error('Failed to load title symbol:', error);
+    return null;
+  }
+}
+
 // 检查价格是否触发告警
 export function checkAlertTrigger(
   alert: PriceAlert,
