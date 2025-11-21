@@ -16,6 +16,7 @@ export default function Home() {
   const [tradingPairs, setTradingPairs] = useState<TradingPair[]>([]);
   const [alerts, setAlerts] = useState<AlertConfigMap>({});
   const [fullscreenSymbol, setFullscreenSymbol] = useState<string | null>(null);
+  const [titleSymbol, setTitleSymbol] = useState<string | null>(null);
 
   // 从 localStorage 加载交易对
   useEffect(() => {
@@ -102,6 +103,11 @@ export default function Home() {
     }));
   };
 
+  // 切换标题显示
+  const handleToggleTitle = (symbol: string) => {
+    setTitleSymbol((prev) => (prev === symbol ? null : symbol));
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* 全屏视图 */}
@@ -177,6 +183,8 @@ export default function Home() {
                 onDeleteAlert={(alertId) => handleDeleteAlert(pair.symbol, alertId)}
                 onToggleAlert={(alertId) => handleToggleAlert(pair.symbol, alertId)}
                 onFullscreen={() => setFullscreenSymbol(pair.symbol)}
+                isTitleSource={titleSymbol === pair.symbol}
+                onToggleTitle={() => handleToggleTitle(pair.symbol)}
               />
             ))}
           </div>
@@ -227,6 +235,8 @@ function PriceCardWrapper({
   onDeleteAlert,
   onToggleAlert,
   onFullscreen,
+  isTitleSource,
+  onToggleTitle,
 }: {
   symbol: string;
   onRemove: () => void;
@@ -235,6 +245,8 @@ function PriceCardWrapper({
   onDeleteAlert: (alertId: string) => void;
   onToggleAlert: (alertId: string) => void;
   onFullscreen: () => void;
+  isTitleSource: boolean;
+  onToggleTitle: () => void;
 }) {
   const { priceData, connectionStatus } = useBinancePrice(symbol);
 
@@ -249,6 +261,8 @@ function PriceCardWrapper({
       onDeleteAlert={onDeleteAlert}
       onToggleAlert={onToggleAlert}
       onFullscreen={onFullscreen}
+      isTitleSource={isTitleSource}
+      onToggleTitle={onToggleTitle}
     />
   );
 }

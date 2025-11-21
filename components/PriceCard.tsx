@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PriceDisplay } from './PriceDisplay';
@@ -7,7 +8,7 @@ import { AlertDialog } from './AlertDialog';
 import { formatPercent, calculatePriceDiff, cn } from '@/lib/utils';
 import { PriceData, PriceAlert } from '@/lib/types';
 import { usePriceAlert } from '@/hooks/usePriceAlert';
-import { X, Bell, Maximize2 } from 'lucide-react';
+import { X, Bell, Maximize2, Monitor, MonitorCheck } from 'lucide-react';
 
 interface PriceCardProps {
   symbol: string;
@@ -19,6 +20,8 @@ interface PriceCardProps {
   onDeleteAlert: (alertId: string) => void;
   onToggleAlert: (alertId: string) => void;
   onFullscreen?: () => void;
+  isTitleSource?: boolean;
+  onToggleTitle?: () => void;
 }
 
 export function PriceCard({
@@ -31,6 +34,8 @@ export function PriceCard({
   onDeleteAlert,
   onToggleAlert,
   onFullscreen,
+  isTitleSource = false,
+  onToggleTitle,
 }: PriceCardProps) {
   const futuresPrice = priceData?.futuresPrice ?? null;
   const spotPrice = priceData?.spotPrice ?? null;
@@ -49,6 +54,19 @@ export function PriceCard({
     alerts: enabledAlerts,
   });
 
+  // 更新浏览器标题
+  useEffect(() => {
+    if (isTitleSource) {
+      const displayPrice = futuresPrice || '...';
+      document.title = `${displayPrice} | ${symbol}`;
+    }
+    return () => {
+      if (isTitleSource) {
+        document.title = '币安合约价格监控';
+      }
+    };
+  }, [isTitleSource, futuresPrice, symbol]);
+
   return (
     <Card className="relative transition-all hover:shadow-md">
       <CardHeader className="pb-3">
@@ -62,6 +80,25 @@ export function PriceCard({
                   {enabledAlerts.length}
                 </span>
               </div>
+            )}
+            {onToggleTitle && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className={cn("h-6 w-6", isTitleSource ? "text-primary" : "text-muted-foreground hover:text-primary")}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onToggleTitle();
+                }}
+                aria-label={isTitleSource ? "取消标题显示" : "显示在标题栏"}
+                title={isTitleSource ? "取消标题显示" : "显示在标题栏"}
+              >
+                {isTitleSource ? (
+                  <MonitorCheck className="h-4 w-4" />
+                ) : (
+                  <Monitor className="h-4 w-4" />
+                )}
+              </Button>
             )}
             {onFullscreen && (
               <Button
