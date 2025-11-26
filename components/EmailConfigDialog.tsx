@@ -59,23 +59,26 @@ export function EmailConfigDialog() {
     }
     
     // 检查是否已存在
-    if (config.to.includes(email)) {
+    const currentRecipients = Array.isArray(config.to) ? config.to : (config.to ? [config.to] : []);
+    if (currentRecipients.includes(email)) {
       alert('该邮箱已存在');
       return;
     }
     
-    setConfig({ ...config, to: [...config.to, email] });
+    setConfig({ ...config, to: [...currentRecipients, email] });
     setNewRecipient('');
   };
 
   // 删除收件人
   const handleRemoveRecipient = (email: string) => {
-    setConfig({ ...config, to: config.to.filter(e => e !== email) });
+    const currentRecipients = Array.isArray(config.to) ? config.to : (config.to ? [config.to] : []);
+    setConfig({ ...config, to: currentRecipients.filter(e => e !== email) });
   };
 
   // 保存配置
   const handleSave = () => {
-    if (config.to.length === 0) {
+    const currentRecipients = Array.isArray(config.to) ? config.to : (config.to ? [config.to] : []);
+    if (currentRecipients.length === 0) {
       alert('请至少添加一个收件人邮箱');
       return;
     }
@@ -203,9 +206,9 @@ export function EmailConfigDialog() {
             <Label>收件邮箱</Label>
             
             {/* 已添加的收件人列表 */}
-            {config.to.length > 0 && (
+            {(Array.isArray(config.to) ? config.to : (config.to ? [config.to] : [])).length > 0 && (
               <div className="space-y-2 p-3 border rounded-md bg-muted/30">
-                {config.to.map((email, index) => (
+                {(Array.isArray(config.to) ? config.to : (config.to ? [config.to] : [])).map((email: string, index: number) => (
                   <div key={index} className="flex items-center justify-between gap-2 p-2 bg-background rounded border">
                     <span className="text-sm flex-1 truncate">{email}</span>
                     <Button
