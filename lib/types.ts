@@ -65,7 +65,7 @@ export interface EmailConfig {
     };
   };
   from: string;
-  to: string[]; // 改为数组支持多个收件人
+  to: string | string[]; // 兼容旧版本（字符串）和新版本（数组）
   subjectPrefix: string;
   throttleMinutes: number;
 }
