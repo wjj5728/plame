@@ -49,6 +49,7 @@ export function AlertDialog({
   const [alertType, setAlertType] = useState<AlertType>('futures');
   const [condition, setCondition] = useState<AlertCondition>('above');
   const [targetPrice, setTargetPrice] = useState('');
+  const [emailNotification, setEmailNotification] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const currentPrice = alertType === 'futures' ? futuresPrice : spotPrice;
@@ -84,9 +85,11 @@ export function AlertDialog({
       condition,
       targetPrice: price,
       enabled: true,
+      emailNotification,
     });
 
     setTargetPrice('');
+    setEmailNotification(false);
     setError(null);
     setOpen(false);
   };
@@ -95,6 +98,7 @@ export function AlertDialog({
     setOpen(newOpen);
     if (!newOpen) {
       setTargetPrice('');
+      setEmailNotification(false);
       setError(null);
     }
   };
@@ -113,7 +117,7 @@ export function AlertDialog({
         <DialogHeader>
           <DialogTitle>价格告警设置 - {symbol}</DialogTitle>
           <DialogDescription>
-            设置价格告警，当价格达到目标值时将收到浏览器通知
+            设置价格告警，当价格达到目标值时将收到浏览器通知和邮件通知（如已启用）
           </DialogDescription>
         </DialogHeader>
 
@@ -127,7 +131,7 @@ export function AlertDialog({
                 className="flex items-center justify-between p-3 border rounded-lg"
               >
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                     <span className="text-sm font-medium">
                       {alert.type === 'futures' ? '合约' : '现货'}
                     </span>
@@ -144,6 +148,11 @@ export function AlertDialog({
                     >
                       {alert.enabled ? '启用' : '禁用'}
                     </span>
+                    {alert.emailNotification && (
+                      <span className="text-xs px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                        📧 邮件
+                      </span>
+                    )}
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
@@ -227,6 +236,19 @@ export function AlertDialog({
               </p>
             )}
             {error && <p className="text-sm text-destructive">{error}</p>}
+          </div>
+
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="emailNotification"
+              checked={emailNotification}
+              onChange={(e) => setEmailNotification(e.target.checked)}
+              className="h-4 w-4"
+            />
+            <Label htmlFor="emailNotification" className="text-sm font-normal cursor-pointer">
+              同时发送邮件通知
+            </Label>
           </div>
 
           <DialogFooter className="gap-2">

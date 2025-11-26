@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { PriceData, PriceAlert } from '@/lib/types';
+import { PriceData, PriceAlert, EmailConfig } from '@/lib/types';
 import { checkAlertTrigger } from '@/lib/utils';
 import { sendPriceAlertNotification, checkNotificationPermission } from '@/lib/notification';
 
@@ -10,6 +10,42 @@ interface UsePriceAlertOptions {
   priceData: PriceData | null;
   alerts: PriceAlert[];
   onAlertTriggered?: (alert: PriceAlert) => void;
+}
+
+// 发送邮件通知
+async function sendEmailAlert(
+  config: EmailConfig,
+  symbol: string,
+  type: 'futures' | 'spot',
+  condition: 'above' | 'below',
+  targetPrice: number,
+  currentPrice: number
+) {
+  try {
+    const response = await fetch('/api/email/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        config,
+        symbol,
+        type,
+        condition,
+        targetPrice,
+        currentPrice,
+      }),
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      console.log('邮件发送成功:', result.message);
+    } else {
+      console.warn('邮件发送失败:', result.message);
+    }
+  } catch (error) {
+    console.error('发送邮件请求失败:', error);
+  }
 }
 
 // 价格告警监控 Hook
@@ -56,6 +92,28 @@ export function usePriceAlert({
             alert.targetPrice,
             currentPrice!
           );
+        }
+
+        // 发送邮件通知（如果启用）
+        if (alert.emailNotification) {
+          const emailConfig = localStorage.getItem('emailConfig');
+          if (emailConfig) {
+            try {
+              const config = JSON.parse(emailConfig);
+              if (config.enabled) {
+                sendEmailAlert(
+                  config,
+                  symbol,
+                  alert.type,
+                  alert.condition,
+                  alert.targetPrice,
+                  currentPrice!
+                );
+              }
+            } catch (error) {
+              console.error('解析邮件配置失败:', error);
+            }
+          }
         }
 
         // 调用回调

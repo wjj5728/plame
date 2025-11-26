@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { TradingPair, PriceAlert, AlertConfigMap } from "./types"
+import { TradingPair, PriceAlert, AlertConfigMap, EmailConfig } from "./types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -140,5 +140,28 @@ export function checkAlertTrigger(
     return currentPrice >= alert.targetPrice;
   } else {
     return currentPrice <= alert.targetPrice;
+  }
+}
+
+// localStorage 操作：保存邮件配置
+export function saveEmailConfig(config: EmailConfig): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('emailConfig', JSON.stringify(config));
+  } catch (error) {
+    console.error('Failed to save email config:', error);
+  }
+}
+
+// localStorage 操作：读取邮件配置
+export function loadEmailConfig(): EmailConfig | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const data = localStorage.getItem('emailConfig');
+    if (!data) return null;
+    return JSON.parse(data) as EmailConfig;
+  } catch (error) {
+    console.error('Failed to load email config:', error);
+    return null;
   }
 }

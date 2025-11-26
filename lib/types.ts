@@ -46,8 +46,27 @@ export interface PriceAlert {
   enabled: boolean;
   createdAt: number;
   triggeredAt?: number; // 触发时间
+  emailNotification?: boolean; // 是否启用邮件通知
 }
 
 // 告警配置映射（按交易对符号）
 export type AlertConfigMap = Record<string, PriceAlert[]>;
+
+// 邮件配置接口
+export interface EmailConfig {
+  enabled: boolean;
+  smtp: {
+    host: string;
+    port: number;
+    secure: boolean;
+    auth: {
+      user: string;
+      pass: string;
+    };
+  };
+  from: string;
+  to: string;
+  subjectPrefix: string;
+  throttleMinutes: number;
+}
 

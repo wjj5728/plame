@@ -5,6 +5,7 @@ import { PriceCard } from '@/components/PriceCard';
 import { FullscreenPriceView } from '@/components/FullscreenPriceView';
 import { AddPairDialog } from '@/components/AddPairDialog';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { EmailConfigDialog } from '@/components/EmailConfigDialog';
 import { useBinancePrice } from '@/hooks/useBinancePrice';
 import { TradingPair, PriceAlert, AlertConfigMap } from '@/lib/types';
 import { saveTradingPairs, loadTradingPairs, saveAlerts, loadAlerts, saveTitleSymbol, loadTitleSymbol } from '@/lib/utils';
@@ -145,6 +146,7 @@ export default function Home() {
               </p>
             </div>
             <div className="flex items-center gap-3">
+              <EmailConfigDialog />
               <ThemeToggle />
               <AddPairDialog
                 onAdd={handleAddPair}
