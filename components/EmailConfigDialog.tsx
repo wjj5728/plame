@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Mail, Send } from 'lucide-react';
+import { Mail, Send, Plus, X } from 'lucide-react';
 import { EmailConfig } from '@/lib/types';
 import { saveEmailConfig, loadEmailConfig } from '@/lib/utils';
 
@@ -23,10 +23,11 @@ export function EmailConfigDialog() {
       },
     },
     from: '',
-    to: '',
+    to: [], // 改为数组
     subjectPrefix: '[币安提醒]',
     throttleMinutes: 5,
   });
+  const [newRecipient, setNewRecipient] = useState(''); // 新收件人输入
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
 
@@ -34,12 +35,50 @@ export function EmailConfigDialog() {
   useEffect(() => {
     const savedConfig = loadEmailConfig();
     if (savedConfig) {
-      setConfig(savedConfig);
+      // 兼容旧版本：如果 to 是字符串，转换为数组
+      const normalizedConfig = {
+        ...savedConfig,
+        to: Array.isArray(savedConfig.to) 
+          ? savedConfig.to 
+          : (savedConfig.to ? [savedConfig.to as string] : [])
+      };
+      setConfig(normalizedConfig);
     }
   }, []);
 
+  // 添加收件人
+  const handleAddRecipient = () => {
+    const email = newRecipient.trim();
+    if (!email) return;
+    
+    // 简单的邮箱格式验证
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      alert('请输入有效的邮箱地址');
+      return;
+    }
+    
+    // 检查是否已存在
+    if (config.to.includes(email)) {
+      alert('该邮箱已存在');
+      return;
+    }
+    
+    setConfig({ ...config, to: [...config.to, email] });
+    setNewRecipient('');
+  };
+
+  // 删除收件人
+  const handleRemoveRecipient = (email: string) => {
+    setConfig({ ...config, to: config.to.filter(e => e !== email) });
+  };
+
   // 保存配置
   const handleSave = () => {
+    if (config.to.length === 0) {
+      alert('请至少添加一个收件人邮箱');
+      return;
+    }
     saveEmailConfig(config);
     setOpen(false);
   };
@@ -159,16 +198,59 @@ export function EmailConfigDialog() {
             </p>
           </div>
 
-          {/* 收件邮箱 */}
+          {/* 收件邮箱列表 */}
           <div className="space-y-2">
-            <Label htmlFor="to-email">收件邮箱</Label>
-            <Input
-              id="to-email"
-              type="email"
-              value={config.to}
-              onChange={(e) => setConfig({ ...config, to: e.target.value })}
-              placeholder="receiver@example.com"
-            />
+            <Label>收件邮箱</Label>
+            
+            {/* 已添加的收件人列表 */}
+            {config.to.length > 0 && (
+              <div className="space-y-2 p-3 border rounded-md bg-muted/30">
+                {config.to.map((email, index) => (
+                  <div key={index} className="flex items-center justify-between gap-2 p-2 bg-background rounded border">
+                    <span className="text-sm flex-1 truncate">{email}</span>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 text-destructive hover:text-destructive"
+                      onClick={() => handleRemoveRecipient(email)}
+                      title="删除"
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {/* 添加新收件人 */}
+            <div className="flex gap-2">
+              <Input
+                id="new-recipient"
+                type="email"
+                value={newRecipient}
+                onChange={(e) => setNewRecipient(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddRecipient();
+                  }
+                }}
+                placeholder="输入收件邮箱，按回车或点击添加"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="icon"
+                onClick={handleAddRecipient}
+                title="添加收件人"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              可以添加多个收件邮箱，告警邮件将发送给所有收件人
+            </p>
           </div>
 
           {/* 邮件主题前缀 */}

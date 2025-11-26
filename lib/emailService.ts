@@ -14,7 +14,7 @@ export interface EmailConfig {
     };
   };
   from: string;
-  to: string;
+  to: string[]; // 改为数组支持多个收件人
   subjectPrefix: string;
   throttleMinutes: number;
 }
@@ -189,10 +189,10 @@ ${symbol} 价格告警触发
 触发时间: ${new Date().toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' })}
     `;
 
-    // 发送邮件
+    // 发送邮件到所有收件人
     await transporter.sendMail({
       from: config.from,
-      to: config.to,
+      to: config.to.join(', '), // 将数组转为逗号分隔的字符串
       subject,
       text,
       html,
@@ -231,10 +231,10 @@ export async function testEmailConfig(config: EmailConfig): Promise<{ success: b
     // 验证配置
     await transporter.verify();
 
-    // 发送测试邮件
+    // 发送测试邮件到所有收件人
     await transporter.sendMail({
       from: config.from,
-      to: config.to,
+      to: config.to.join(', '), // 将数组转为逗号分隔的字符串
       subject: `${config.subjectPrefix} 测试邮件`,
       text: '这是一封测试邮件，如果您收到此邮件，说明邮件配置正确。',
       html: `
