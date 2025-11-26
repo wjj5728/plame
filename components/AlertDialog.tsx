@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { PriceAlert, AlertType, AlertCondition } from '@/lib/types';
 import { formatPrice } from '@/lib/utils';
-import { Bell, Trash2 } from 'lucide-react';
+import { Bell, Trash2, Edit } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -32,6 +32,7 @@ interface AlertDialogProps {
   onAddAlert: (alert: Omit<PriceAlert, 'id' | 'createdAt'>) => void;
   onDeleteAlert: (alertId: string) => void;
   onToggleAlert: (alertId: string) => void;
+  onEditAlert: (alertId: string, alert: Omit<PriceAlert, 'id' | 'createdAt'>) => void;
   trigger?: React.ReactNode;
 }
 
@@ -43,6 +44,7 @@ export function AlertDialog({
   onAddAlert,
   onDeleteAlert,
   onToggleAlert,
+  onEditAlert,
   trigger,
 }: AlertDialogProps) {
   const [open, setOpen] = useState(false);
@@ -51,6 +53,7 @@ export function AlertDialog({
   const [targetPrice, setTargetPrice] = useState('');
   const [emailNotification, setEmailNotification] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingAlertId, setEditingAlertId] = useState<string | null>(null);
 
   const currentPrice = alertType === 'futures' ? futuresPrice : spotPrice;
 
@@ -79,17 +82,31 @@ export function AlertDialog({
       return;
     }
 
-    onAddAlert({
-      symbol,
-      type: alertType,
-      condition,
-      targetPrice: price,
-      enabled: true,
-      emailNotification,
-    });
+    if (editingAlertId) {
+      // 编辑模式
+      onEditAlert(editingAlertId, {
+        symbol,
+        type: alertType,
+        condition,
+        targetPrice: price,
+        enabled: true,
+        emailNotification,
+      });
+    } else {
+      // 添加模式
+      onAddAlert({
+        symbol,
+        type: alertType,
+        condition,
+        targetPrice: price,
+        enabled: true,
+        emailNotification,
+      });
+    }
 
     setTargetPrice('');
     setEmailNotification(false);
+    setEditingAlertId(null);
     setError(null);
     setOpen(false);
   };
@@ -99,8 +116,19 @@ export function AlertDialog({
     if (!newOpen) {
       setTargetPrice('');
       setEmailNotification(false);
+      setEditingAlertId(null);
       setError(null);
     }
+  };
+
+  // 开始编辑告警
+  const handleEditClick = (alert: PriceAlert) => {
+    setEditingAlertId(alert.id);
+    setAlertType(alert.type);
+    setCondition(alert.condition);
+    setTargetPrice(alert.targetPrice.toString());
+    setEmailNotification(alert.emailNotification || false);
+    setError(null);
   };
 
   return (
@@ -167,8 +195,18 @@ export function AlertDialog({
                   <Button
                     variant="ghost"
                     size="icon"
+                    onClick={() => handleEditClick(alert)}
+                    className="h-8 w-8"
+                    title="编辑"
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => onDeleteAlert(alert.id)}
                     className="h-8 w-8 text-destructive hover:text-destructive"
+                    title="删除"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -178,8 +216,15 @@ export function AlertDialog({
           </div>
         )}
 
-        {/* 添加新告警 */}
+        {/* 添加/编辑告警 */}
         <form onSubmit={handleSubmit} className="space-y-4">
+          {editingAlertId && (
+            <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-md p-3">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
+                正在编辑告警
+              </p>
+            </div>
+          )}
           <div className="space-y-2">
             <Label htmlFor="alertType">价格类型</Label>
             <Select
@@ -260,7 +305,7 @@ export function AlertDialog({
               取消
             </Button>
             <Button type="submit" disabled={currentPrice === null}>
-              添加告警
+              {editingAlertId ? '保存修改' : '添加告警'}
             </Button>
           </DialogFooter>
         </form>

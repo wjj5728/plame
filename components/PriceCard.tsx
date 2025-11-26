@@ -19,6 +19,7 @@ interface PriceCardProps {
   onAddAlert: (alert: Omit<PriceAlert, 'id' | 'createdAt'>) => void;
   onDeleteAlert: (alertId: string) => void;
   onToggleAlert: (alertId: string) => void;
+  onEditAlert: (alertId: string, alert: Omit<PriceAlert, 'id' | 'createdAt'>) => void;
   onFullscreen?: () => void;
   isTitleSource?: boolean;
   onToggleTitle?: () => void;
@@ -33,6 +34,7 @@ export function PriceCard({
   onAddAlert,
   onDeleteAlert,
   onToggleAlert,
+  onEditAlert,
   onFullscreen,
   isTitleSource = false,
   onToggleTitle,
@@ -123,6 +125,7 @@ export function PriceCard({
               onAddAlert={onAddAlert}
               onDeleteAlert={onDeleteAlert}
               onToggleAlert={onToggleAlert}
+              onEditAlert={onEditAlert}
               trigger={
                 <Button
                   variant="ghost"

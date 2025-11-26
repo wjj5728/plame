@@ -19,6 +19,7 @@ interface FullscreenPriceViewProps {
   onAddAlert: (alert: Omit<PriceAlert, 'id' | 'createdAt'>) => void;
   onDeleteAlert: (alertId: string) => void;
   onToggleAlert: (alertId: string) => void;
+  onEditAlert: (alertId: string, alert: Omit<PriceAlert, 'id' | 'createdAt'>) => void;
 }
 
 export function FullscreenPriceView({
@@ -30,6 +31,7 @@ export function FullscreenPriceView({
   onAddAlert,
   onDeleteAlert,
   onToggleAlert,
+  onEditAlert,
 }: FullscreenPriceViewProps) {
   const [wakeLockEnabled, setWakeLockEnabled] = useState(true);
   const [showControls, setShowControls] = useState(true);

@@ -59,11 +59,7 @@
   - `saveEmailConfig()` - 保存邮件配置
   - `loadEmailConfig()` - 加载邮件配置
 
-#### 7. 配置文件模板
-- **文件**: `config/email.config.js`
-- **内容**: 默认邮件配置模板（包含 QQ 邮箱示例）
-
-#### 8. 文档
+#### 7. 文档
 - **文件**: `EMAIL_SETUP.md`
 - **内容**: 详细的邮件功能使用说明和配置指南
 
@@ -153,8 +149,6 @@ plame/
 ├── components/
 │   ├── AlertDialog.tsx               # 告警对话框（已更新）
 │   └── EmailConfigDialog.tsx         # 邮件配置对话框（新增）
-├── config/
-│   └── email.config.js               # 邮件配置模板（新增）
 ├── hooks/
 │   └── usePriceAlert.ts              # 价格告警 Hook（已更新）
 ├── lib/

@@ -112,6 +112,16 @@ export default function Home() {
     }));
   };
 
+  // 编辑告警
+  const handleEditAlert = (symbol: string, alertId: string, updatedAlert: Omit<PriceAlert, 'id' | 'createdAt'>) => {
+    setAlerts((prev) => ({
+      ...prev,
+      [symbol]: (prev[symbol] || []).map((alert) =>
+        alert.id === alertId ? { ...alert, ...updatedAlert } : alert
+      ),
+    }));
+  };
+
   // 切换标题显示
   const handleToggleTitle = (symbol: string) => {
     setTitleSymbol((prev) => {
@@ -132,6 +142,7 @@ export default function Home() {
           onAddAlert={(alert) => handleAddAlert(fullscreenSymbol, alert)}
           onDeleteAlert={(alertId) => handleDeleteAlert(fullscreenSymbol, alertId)}
           onToggleAlert={(alertId) => handleToggleAlert(fullscreenSymbol, alertId)}
+          onEditAlert={(alertId, alert) => handleEditAlert(fullscreenSymbol, alertId, alert)}
         />
       )}
 
@@ -196,6 +207,7 @@ export default function Home() {
                 onAddAlert={(alert) => handleAddAlert(pair.symbol, alert)}
                 onDeleteAlert={(alertId) => handleDeleteAlert(pair.symbol, alertId)}
                 onToggleAlert={(alertId) => handleToggleAlert(pair.symbol, alertId)}
+                onEditAlert={(alertId, alert) => handleEditAlert(pair.symbol, alertId, alert)}
                 onFullscreen={() => setFullscreenSymbol(pair.symbol)}
                 isTitleSource={titleSymbol === pair.symbol}
                 onToggleTitle={() => handleToggleTitle(pair.symbol)}
@@ -216,6 +228,7 @@ function FullscreenPriceViewWrapper({
   onAddAlert,
   onDeleteAlert,
   onToggleAlert,
+  onEditAlert,
 }: {
   symbol: string;
   onClose: () => void;
@@ -223,6 +236,7 @@ function FullscreenPriceViewWrapper({
   onAddAlert: (alert: Omit<PriceAlert, 'id' | 'createdAt'>) => void;
   onDeleteAlert: (alertId: string) => void;
   onToggleAlert: (alertId: string) => void;
+  onEditAlert: (alertId: string, alert: Omit<PriceAlert, 'id' | 'createdAt'>) => void;
 }) {
   const { priceData, connectionStatus } = useBinancePrice(symbol);
 
@@ -236,6 +250,7 @@ function FullscreenPriceViewWrapper({
       onAddAlert={onAddAlert}
       onDeleteAlert={onDeleteAlert}
       onToggleAlert={onToggleAlert}
+      onEditAlert={onEditAlert}
     />
   );
 }
@@ -248,6 +263,7 @@ function PriceCardWrapper({
   onAddAlert,
   onDeleteAlert,
   onToggleAlert,
+  onEditAlert,
   onFullscreen,
   isTitleSource,
   onToggleTitle,
@@ -258,6 +274,7 @@ function PriceCardWrapper({
   onAddAlert: (alert: Omit<PriceAlert, 'id' | 'createdAt'>) => void;
   onDeleteAlert: (alertId: string) => void;
   onToggleAlert: (alertId: string) => void;
+  onEditAlert: (alertId: string, alert: Omit<PriceAlert, 'id' | 'createdAt'>) => void;
   onFullscreen: () => void;
   isTitleSource: boolean;
   onToggleTitle: () => void;
@@ -274,6 +291,7 @@ function PriceCardWrapper({
       onAddAlert={onAddAlert}
       onDeleteAlert={onDeleteAlert}
       onToggleAlert={onToggleAlert}
+      onEditAlert={onEditAlert}
       onFullscreen={onFullscreen}
       isTitleSource={isTitleSource}
       onToggleTitle={onToggleTitle}
