@@ -70,3 +70,6 @@ export interface EmailConfig {
   throttleMinutes: number;
 }
 
+// 小数位数配置（按交易对）
+export type DecimalPlacesConfig = Record<string, number>;
+

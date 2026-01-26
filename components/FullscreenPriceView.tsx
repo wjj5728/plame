@@ -4,8 +4,9 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { AnimatedPriceDisplay } from './AnimatedPriceDisplay';
 import { ThemeToggle } from './ThemeToggle';
-import { formatPercent, calculatePriceDiff, cn } from '@/lib/utils';
-import { PriceData, PriceAlert } from '@/lib/types';
+import { DecimalPlacesDialog } from './DecimalPlacesDialog';
+import { formatPercent, calculatePriceDiff, cn, loadDecimalPlacesConfig } from '@/lib/utils';
+import { PriceData, PriceAlert, DecimalPlacesConfig } from '@/lib/types';
 import { usePriceAlert } from '@/hooks/usePriceAlert';
 import { useWakeLock } from '@/hooks/useWakeLock';
 import { X, Moon, Sun } from 'lucide-react';
@@ -41,9 +42,32 @@ export function FullscreenPriceView({
   const futuresChange24h = priceData?.futuresChange24h ?? null;
   const spotChange24h = priceData?.spotChange24h ?? null;
   const priceDiff = calculatePriceDiff(futuresPrice, spotPrice);
+  const [decimalPlacesConfig, setDecimalPlacesConfig] = useState<DecimalPlacesConfig>(loadDecimalPlacesConfig());
 
   const isConnected = connectionStatus === 'connected';
   const enabledAlerts = alerts.filter((a) => a.enabled);
+
+  // 监听 localStorage 变化以更新配置
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'decimalPlacesConfig') {
+        setDecimalPlacesConfig(loadDecimalPlacesConfig());
+      }
+    };
+
+    // 监听 storage 事件（跨标签页）
+    window.addEventListener('storage', handleStorageChange);
+
+    // 定期检查配置变化（同标签页内）
+    const interval = setInterval(() => {
+      setDecimalPlacesConfig(loadDecimalPlacesConfig());
+    }, 500);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   // 监控价格告警
   usePriceAlert({
@@ -155,6 +179,8 @@ export function FullscreenPriceView({
               price={futuresPrice}
               change24h={futuresChange24h}
               size="xlarge"
+              symbol={symbol}
+              decimalPlacesConfig={decimalPlacesConfig}
             />
           </div>
 
@@ -166,6 +192,8 @@ export function FullscreenPriceView({
                 price={spotPrice}
                 change24h={spotChange24h}
                 size="xlarge"
+                symbol={symbol}
+                decimalPlacesConfig={decimalPlacesConfig}
               />
             </div>
           ) : (
@@ -202,6 +230,10 @@ export function FullscreenPriceView({
       {showControls && (
         <div className="absolute top-4 right-4 flex items-center gap-2 transition-opacity">
           <ThemeToggle />
+          <DecimalPlacesDialog 
+            symbol={symbol}
+            onConfigChange={() => setDecimalPlacesConfig(loadDecimalPlacesConfig())}
+          />
           <Button
             variant="ghost"
             size="icon"

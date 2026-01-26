@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { formatPercent, getPriceDecimals } from '@/lib/utils';
 import { cn } from '@/lib/utils';
 import { ScrollingNumber } from './ScrollingNumber';
+import { DecimalPlacesConfig } from '@/lib/types';
 
 interface AnimatedPriceDisplayProps {
   price: number | null;
@@ -11,6 +12,8 @@ interface AnimatedPriceDisplayProps {
   label?: string;
   className?: string;
   size?: 'normal' | 'large' | 'xlarge';
+  symbol?: string;
+  decimalPlacesConfig?: DecimalPlacesConfig | null;
 }
 
 export function AnimatedPriceDisplay({
@@ -19,6 +22,8 @@ export function AnimatedPriceDisplay({
   label,
   className,
   size = 'normal',
+  symbol,
+  decimalPlacesConfig,
 }: AnimatedPriceDisplayProps) {
   const [displayPrice, setDisplayPrice] = useState<number | null>(price);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -82,7 +87,7 @@ export function AnimatedPriceDisplay({
       <div className="flex items-center gap-4">
         <ScrollingNumber
           value={displayPrice}
-          decimals={displayPrice !== null ? getPriceDecimals(displayPrice) : 2}
+          decimals={displayPrice !== null ? getPriceDecimals(displayPrice, symbol, decimalPlacesConfig) : 2}
           size={size}
         />
         {change24h !== null && (

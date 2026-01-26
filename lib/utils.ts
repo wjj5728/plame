@@ -1,6 +1,6 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
-import { TradingPair, PriceAlert, AlertConfigMap, EmailConfig } from "./types"
+import { TradingPair, PriceAlert, AlertConfigMap, EmailConfig, DecimalPlacesConfig } from "./types"
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -8,15 +8,24 @@ export function cn(...inputs: ClassValue[]) {
 
 // 根据价格值计算应该使用的小数位数
 // 如果价格小于1（0.开头），使用4位小数；否则使用2位小数
-export function getPriceDecimals(price: number): number {
+export function getPriceDecimals(price: number, symbol?: string, config?: DecimalPlacesConfig | null): number {
+  // 如果提供了配置且该交易对已配置，使用配置的值
+  if (symbol && config && config[symbol] !== undefined) {
+    return config[symbol];
+  }
+  // 否则使用旧的逻辑
   return price < 1 ? 4 : 2;
 }
 
 // 格式化价格显示
-export function formatPrice(price: number | null, decimals?: number): string {
+export function formatPrice(price: number | null, decimals?: number, symbol?: string, config?: DecimalPlacesConfig | null): string {
   if (price === null) return '--';
-  // 如果没有指定小数位数，根据价格值自动判断
-  const finalDecimals = decimals !== undefined ? decimals : getPriceDecimals(price);
+  // 如果指定了小数位数，直接使用
+  if (decimals !== undefined) {
+    return price.toFixed(decimals);
+  }
+  // 否则根据配置或价格值自动判断
+  const finalDecimals = getPriceDecimals(price, symbol, config);
   return price.toFixed(finalDecimals);
 }
 
@@ -163,5 +172,28 @@ export function loadEmailConfig(): EmailConfig | null {
   } catch (error) {
     console.error('Failed to load email config:', error);
     return null;
+  }
+}
+
+// localStorage 操作：保存小数位数配置
+export function saveDecimalPlacesConfig(config: DecimalPlacesConfig): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('decimalPlacesConfig', JSON.stringify(config));
+  } catch (error) {
+    console.error('Failed to save decimal places config:', error);
+  }
+}
+
+// localStorage 操作：读取小数位数配置
+export function loadDecimalPlacesConfig(): DecimalPlacesConfig {
+  if (typeof window === 'undefined') return {};
+  try {
+    const data = localStorage.getItem('decimalPlacesConfig');
+    if (!data) return {};
+    return JSON.parse(data) as DecimalPlacesConfig;
+  } catch (error) {
+    console.error('Failed to load decimal places config:', error);
+    return {};
   }
 }

@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { PriceDisplay } from './PriceDisplay';
 import { AlertDialog } from './AlertDialog';
-import { formatPercent, calculatePriceDiff, cn } from '@/lib/utils';
-import { PriceData, PriceAlert } from '@/lib/types';
+import { DecimalPlacesDialog } from './DecimalPlacesDialog';
+import { formatPercent, calculatePriceDiff, cn, loadDecimalPlacesConfig } from '@/lib/utils';
+import { PriceData, PriceAlert, DecimalPlacesConfig } from '@/lib/types';
 import { usePriceAlert } from '@/hooks/usePriceAlert';
 import { X, Bell, Maximize2, Monitor, MonitorCheck } from 'lucide-react';
 
@@ -44,10 +45,33 @@ export function PriceCard({
   const futuresChange24h = priceData?.futuresChange24h ?? null;
   const spotChange24h = priceData?.spotChange24h ?? null;
   const priceDiff = calculatePriceDiff(futuresPrice, spotPrice);
+  const [decimalPlacesConfig, setDecimalPlacesConfig] = useState<DecimalPlacesConfig>(loadDecimalPlacesConfig());
 
   const isConnected = connectionStatus === 'connected';
   const isLoading = connectionStatus === 'connecting';
   const enabledAlerts = alerts.filter((a) => a.enabled);
+
+  // 监听 localStorage 变化以更新配置
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'decimalPlacesConfig') {
+        setDecimalPlacesConfig(loadDecimalPlacesConfig());
+      }
+    };
+
+    // 监听 storage 事件（跨标签页）
+    window.addEventListener('storage', handleStorageChange);
+
+    // 定期检查配置变化（同标签页内）
+    const interval = setInterval(() => {
+      setDecimalPlacesConfig(loadDecimalPlacesConfig());
+    }, 500);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
+  }, []);
 
   // 监控价格告警
   usePriceAlert({
@@ -117,6 +141,10 @@ export function PriceCard({
                 <Maximize2 className="h-4 w-4" />
               </Button>
             )}
+            <DecimalPlacesDialog 
+              symbol={symbol}
+              onConfigChange={() => setDecimalPlacesConfig(loadDecimalPlacesConfig())}
+            />
             <AlertDialog
               symbol={symbol}
               futuresPrice={futuresPrice}
@@ -174,6 +202,8 @@ export function PriceCard({
           label="合约价格"
           price={futuresPrice}
           change24h={futuresChange24h}
+          symbol={symbol}
+          decimalPlacesConfig={decimalPlacesConfig}
         />
 
         {/* 现货价格 */}
@@ -182,6 +212,8 @@ export function PriceCard({
             label="现货价格"
             price={spotPrice}
             change24h={spotChange24h}
+            symbol={symbol}
+            decimalPlacesConfig={decimalPlacesConfig}
           />
         ) : (
           isConnected && (

@@ -2,15 +2,18 @@
 
 import { formatPrice, formatPercent } from '@/lib/utils';
 import { cn } from '@/lib/utils';
+import { DecimalPlacesConfig } from '@/lib/types';
 
 interface PriceDisplayProps {
   price: number | null;
   change24h: number | null;
   label?: string;
   className?: string;
+  symbol?: string;
+  decimalPlacesConfig?: DecimalPlacesConfig | null;
 }
 
-export function PriceDisplay({ price, change24h, label, className }: PriceDisplayProps) {
+export function PriceDisplay({ price, change24h, label, className, symbol, decimalPlacesConfig }: PriceDisplayProps) {
   const isPositive = change24h !== null && change24h >= 0;
   const isNegative = change24h !== null && change24h < 0;
 
@@ -21,7 +24,7 @@ export function PriceDisplay({ price, change24h, label, className }: PriceDispla
       )}
       <div className="flex items-center gap-2">
         <span className="text-lg font-semibold">
-          {formatPrice(price)}
+          {formatPrice(price, undefined, symbol, decimalPlacesConfig)}
         </span>
         {change24h !== null && (
           <span
